@@ -32,7 +32,7 @@ class HashTable {
                 return;
             }
             else{
-                for (int i=1; i< capacity/2; i++){
+                for (int i=1; i< capacity; i++){
                     int index2 = (index + i*i)%size;
                     if (arr[index2]==-1){
                         arr[index2] = key;
@@ -40,6 +40,7 @@ class HashTable {
                         return;
                     }
                 }
+                cout << "Max probing limit reached!" << endl;
             }
 
         }
@@ -51,7 +52,7 @@ class HashTable {
                 size--;
             }
             else{
-                for (int i=1; i< capacity/2; i++){
+                for (int i=1; i< capacity; i++){
                     int index2 = (index + i*i)%size;
                     if (arr[index2]==key){
                         arr[index2] = -1;
@@ -59,6 +60,7 @@ class HashTable {
                         return;
                     }
                 }
+                cout << "Max probing limit reached!" << endl;
             }
 
         }
@@ -117,13 +119,14 @@ class HashTable {
                 return index;
             }
             else{
-                for (int i=1; i< capacity/2; i++){
+                for (int i=1; i< capacity; i++){
                     int index2 = (index + i*i)%size;
                     if (arr[index2]==key){
                         return index2;
                     }
                 }
             }
+            cout << "Element not found" << endl;
             return -1;
         }
         
