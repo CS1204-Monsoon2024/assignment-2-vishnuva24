@@ -60,7 +60,6 @@ class HashTable {
                         return;
                     }
                 }
-                cout << "Max probing limit reached!" << endl;
             }
 
         }
@@ -126,7 +125,6 @@ class HashTable {
                     }
                 }
             }
-            cout << "Element not found" << endl;
             return -1;
         }
         
