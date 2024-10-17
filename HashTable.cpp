@@ -1,142 +1,125 @@
-#include <iostream>
 #include <vector>
-using namespace std;
+#include <cmath>
+#include <iostream>
 
 class HashTable {
-    private:
-        int size;
-        int* arr;
-        int capacity;
-        int hash(int key, int size){
-            return key % size;
-        }
+private:
+    std::vector<int> table;
+    int capacity;
+    int size;
+    double loadFactor;
 
-    public:
-        HashTable(int initialSize){
-            capacity = initialSize;
-            size = 0;
-            arr = new int[capacity];
-            for (int i=0; i<capacity; i++){
-                arr[i] = -1;
+    int hash(int key) {
+        return key % capacity;
+    }
+
+    int nextPrime(int n) {
+        while (true) {
+            bool isPrime = true;
+            for (int i = 2; i*i <= n; i++) {
+                if (n % i == 0) {
+                    isPrime = false;
+                    break;
+                }
+            }
+            if (isPrime) return n;
+            n++;
+        }
+    }
+
+    void recapacity() {
+        int newcapacity = nextPrime(capacity * 2);
+        std::vector<int> newTable(newcapacity, -1);
+        
+        for (int i = 0; i < capacity; i++) {
+            if (table[i] != -1 && table[i] != -2) {
+                int key = table[i];
+                int index = key % newcapacity;
+                int j = 0;
+                while (newTable[(index + j * j) % newcapacity] != -1) {
+                    j++;
+                }
+                newTable[(index + j * j) % newcapacity] = key;
             }
         }
-        
-        void insert(int key){
-            if (size >= 0.8 * capacity){
-                resizeTable();
+        table = newTable;
+        capacity = newcapacity;
+    }
+
+public:
+    HashTable(int initcapacity = 5) {
+        capacity = nextPrime(initcapacity);
+        table = std::vector<int>(capacity, -1);
+        size = 0;
+        loadFactor = 0.8;
+    }
+
+    void insert(int key) {
+        if (size >= loadFactor * capacity) {
+            recapacity();
+        }
+        int index = hash(key);
+        int j = 0;
+
+        while (j < capacity) {
+            int index2 = (index + (j * j)) % capacity;
+            if (table[index2] == key) {
+                std::cout << "Duplicate key insertion is not allowed\n";
+                return;
             }
-            int index = hash(key, capacity);
-            if (arr[index]==-1){
-                arr[index] = key;
+            if (table[index2] == -1 || table[index2] == -2) {
+                table[index2] = key;
                 size++;
                 return;
             }
-            else{
-                for (int i=1; i< capacity; i++){
-                    int index2 = (index + i*i)%size;
-                    if (arr[index2]==-1){
-                        arr[index2] = key;
-                        size++;
-                        return;
-                    }
-                }
-                cout << "Max probing limit reached!" << endl;
-            }
-
+            j++;
         }
+        std::cout << "Max probing limit reached!\n";
+    }
 
-        void remove(int key){
-            int index = hash(key, capacity);
-            if (arr[index]==key){
-                arr[index] = -1;
+    void remove(int key) {
+        int index = hash(key);
+        int j = 0;
+
+        while (j < capacity) {
+            int index2 = (index + (j * j)) % capacity;
+            if (table[index2] == key) {
+                table[index2] = -2;
                 size--;
+                return;
+            } else if (table[index2] == -1) {
+                std::cout << "Element not found\n";
+                return;
             }
-            else{
-                for (int i=1; i< capacity; i++){
-                    int index2 = (index + i*i)%size;
-                    if (arr[index2]==key){
-                        arr[index2] = -1;
-                        size--;
-                        return;
-                    }
-                }
-            }
+            j++;
+        }
+        std::cout << "Element not found\n";
+    }
 
-        }
-        bool isPrime(int num) {
-            if (num <= 1) return false; 
-            for (int i = 2; i*i <= num; i++){
-                if (num%i==0){
-                    return false;
-                }
-            }
-            return true;
-        }
+    int search(int key) {
+        int index = hash(key);
+        int j = 0;
 
-        int primeGreaterThan(int num){
-            int i = num+1;
+        while (j < capacity) {
+            int index2 = (index + (j * j)) % capacity;
+            if (table[index2] == key) {
+                return index2;
+            } else if (table[index2] == -1) {
+                return -1;
+            }
+            j++;
+        }
+        return -1;
+    }
 
-            while (true){
-                if (isPrime(i)){
-                    return i;
-                }
-                i++;
+    void printTable() {
+        for (int i = 0; i < capacity; i++) {
+            if (table[i] == -1 || table[i] == -2) {
+                std::cout << "- ";
+            } else {
+                std::cout << table[i] << " ";
             }
         }
-
-        void resizeTable(){
-            int updatedSize = primeGreaterThan(2*size);
-            int* updatedArr = new int[updatedSize];
-            for (int i=0; i<updatedSize; i++){
-                updatedArr[i] = -1;
-            }
-            for (int i=0; i<size; i++){
-                if (arr[i]!=-1){
-                    int key = arr[i];
-                    int index = hash(key, updatedSize);
-                    if (updatedArr[index]==-1){
-                        updatedArr[index] = key;
-                    }
-                    else{
-                        for (int j=1; j<updatedSize; j++){
-                            int index2 = (index + j*j)%updatedSize;
-                            if (updatedArr[index2] == -1){
-                                updatedArr[index2] = key;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            delete[] arr;
-            arr = updatedArr;
-            size = updatedSize;
-        }
-        int search(int key){
-            int index = hash(key, capacity);
-            if (arr[index]==key){
-                return index;
-            }
-            else{
-                for (int i=1; i< capacity; i++){
-                    int index2 = (index + i*i)%size;
-                    if (arr[index2]==key){
-                        return index2;
-                    }
-                }
-            }
-            return -1;
-        }
-        
-        void printTable(){
-            for (int i=0; i<capacity; i++){
-                if (arr[i]==-1){
-                    cout << "- " ;
-                }
-                else{
-                    cout << arr[i] << " " ;
-                }
-            }
-            cout << endl;   
-        }
+        std::cout << "\n";
+    }
 };
