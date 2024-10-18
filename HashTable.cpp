@@ -91,7 +91,7 @@ public:
             }
             j++;
         }
-        cout << "Element not found"<< endl;
+        cout << "Element not found" << endl;
     }
 
     int search(int key) {
